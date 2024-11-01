@@ -1,6 +1,6 @@
 // Initial Game State
 let gameState = {
-    currency: 0,
+    yellowCurrency: 0,
     greenCurrency: 0,
     blueCurrency: 0,
     redCurrency: 0,
@@ -20,7 +20,10 @@ const upgradePrices = {
 };
 
 // Elements
-const currencyDisplay = document.getElementById('currency-display');
+const yellowCurrencyDisplay = document.getElementById('yellow-currency');
+const greenCurrencyDisplay = document.getElementById('green-currency');
+const blueCurrencyDisplay = document.getElementById('blue-currency');
+const redCurrencyDisplay = document.getElementById('red-currency');
 const ballButtonsDiv = document.getElementById('balls');
 const ballCanvas = document.getElementById('ball-canvas');
 const ctx = ballCanvas.getContext('2d');
@@ -75,7 +78,7 @@ class Ball {
 
     bounce() {
         this.bounceCount += 1;
-        gameState.currency += this.value;
+        gameState.yellowCurrency += this.value;
         gameState[`${this.color}Currency`] += 1;
         updateDisplay();
     }
@@ -87,17 +90,24 @@ class Ball {
 
 // Update Display
 function updateDisplay() {
-    currencyDisplay.textContent = `Currency: ${gameState.currency}`;
-    document.getElementById('green-currency').textContent = `Green: ${gameState.greenCurrency}`;
-    document.getElementById('blue-currency').textContent = `Blue: ${gameState.blueCurrency}`;
-    document.getElementById('red-currency').textContent = `Red: ${gameState.redCurrency}`;
+    const currencies = [
+        { element: document.getElementById('yellow-currency'), value: gameState.yellowCurrency },
+        { element: document.getElementById('green-currency'), value: gameState.greenCurrency },
+        { element: document.getElementById('blue-currency'), value: gameState.blueCurrency },
+        { element: document.getElementById('red-currency'), value: gameState.redCurrency }
+    ];
+
+    currencies.forEach(currency => {
+        currency.element.textContent = currency.value;
+        currency.element.classList.toggle('zero', currency.value === 0);
+    });
 }
 
 // Upgrade Ball
 function upgradeBall(ball, type) {
     const level = ball[`${type}Level`] || 0;
     const cost = upgradePrices[type][level];
-    const currencyType = type === 'speed' ? 'blueCurrency' : type === 'value' ? 'redCurrency' : type === 'maxBalls' ? 'currency' : 'greenCurrency';
+    const currencyType = type === 'speed' ? 'blueCurrency' : type === 'value' ? 'redCurrency' : type === 'maxBalls' ? 'yellowCurrency' : 'greenCurrency';
 
     if (gameState[currencyType] >= cost) {
         gameState[currencyType] -= cost;
@@ -115,8 +125,8 @@ function upgradeBall(ball, type) {
 
 // Buy Ball
 function buyBall(ball) {
-    if (gameState.currency >= ball.cost && ball.currentBalls < ball.maxBalls) {
-        gameState.currency -= ball.cost;
+    if (gameState.yellowCurrency >= ball.cost && ball.currentBalls < ball.maxBalls) {
+        gameState.yellowCurrency -= ball.cost;
         addBall(ball.color, ball.value, ball.bounceLimit, ball.speed);
         ball.currentBalls += 1;
         updateDisplay();
@@ -178,12 +188,20 @@ function renderUpgrades() {
         // Set visibility based on openSections
         upgradeContainer.style.display = openSections[ball.name] ? 'block' : 'none';
 
-        // Add upgrade buttons for each type (speed, value, bounceLimit)
+        // Add upgrade buttons for each type (speed, value, bounceLimit, maxBalls)
         ['speed', 'value', 'bounceLimit', 'maxBalls'].forEach(type => {
             const level = ball[`${type}Level`] || 0;
             const cost = upgradePrices[type][level] || 'MAX';
             const button = document.createElement('button');
-            button.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Upgrade (Cost: ${cost} ${type === 'speed' ? 'Blue' : type === 'value' ? 'Red' : type === 'bounceLimit' ? 'Green' :'Currency'})`;
+            
+            // Display ball icons for currency costs instead of text
+            const currencyIcon = document.createElement('span');
+            currencyIcon.classList.add(type === 'speed' ? 'blue-ball' : type === 'value' ? 'red-ball' : type === 'bounceLimit' ? 'green-ball' : 'yellow-ball');
+            button.textContent = `${cost} `;
+            //button.textContent = `${type.charAt(0).toUpperCase() + type.slice(1)} Upgrade (${cost} `;
+            button.appendChild(currencyIcon);
+            button.append(` ${type.charAt(0).toUpperCase() + type.slice(1)} Upgrade`);  // Append closing parenthesis after the icon
+
             button.disabled = cost === 'MAX';
             button.onclick = () => upgradeBall(ball, type);
             upgradeContainer.appendChild(button);
