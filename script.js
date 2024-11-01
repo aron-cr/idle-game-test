@@ -198,7 +198,7 @@ function upgradeBall(ball, type) {
         ball[`${type}Level`] = (ball[`${type}Level`] || 0) + 1;
         if (type === 'speed') ball.speed += 1;
         if (type === 'value') ball.value += 1;
-        if (type === 'bounceLimit') ball.bounceLimit *= 2;
+        if (type === 'bounceLimit') ball.bounceLimit += 1;
         if (type === 'maxBalls') ball.maxBalls += 1;
         updateDisplay();
         renderUpgrades();
