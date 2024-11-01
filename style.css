@@ -180,3 +180,19 @@ h1, #currency-display, #balls button, #upgrade-menu h3, #upgrade-menu .upgrade-b
 .yellow-ball {
     background-color: #FFD700;
 }
+
+.cannon {
+    position: absolute;
+    left: 0;
+    bottom: 50%; 
+    width: 70px;
+    height: 40px;
+    border-radius: 15px;
+    transform-origin: 100% 50%; 
+    transition: transform 0.1s;
+}
+
+.cannon.green { background-color: green; }
+.cannon.red { background-color: red; }
+.cannon.blue { background-color: blue; }
+.cannon.yellow { background-color: yellow; }

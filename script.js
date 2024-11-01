@@ -41,17 +41,17 @@ let balls = [];
 
 // Ball Class
 class Ball {
-    constructor(color, value, bounceLimit, speed) {
+    constructor(color, value, bounceLimit, x, y, vx, vy) {
         this.radius = 10;
         this.color = color;
         this.value = value;
         this.bounceLimit = bounceLimit;
         this.bounceCount = 0;
-        this.x = Math.random() * (ballCanvas.width - this.radius * 2) + this.radius;
-        this.y = Math.random() * (ballCanvas.height - this.radius * 2) + this.radius;
+        this.x = x;
+        this.y = y;
         const angle = Math.random() * 2 * Math.PI;
-        this.vx = Math.cos(angle) * speed;
-        this.vy = Math.sin(angle) * speed;
+        this.vx = vx;
+        this.vy = vy;
     }
 
     draw() {
@@ -87,6 +87,74 @@ class Ball {
         return this.bounceCount >= this.bounceLimit;
     }
 }
+
+// Cannon class to handle ball spawning
+class Cannon {
+    constructor(color, x, y, angleSpeed) {
+        this.color = color;
+        this.x = x;
+        this.y = y;
+        this.angle = -Math.PI / 4; // Start pointing upwards
+        this.angleSpeed = angleSpeed;
+        this.direction = 1; // To control the rotation (1 for down, -1 for up)
+    }
+
+    draw() {
+        const width = 50;
+        const height = 25;
+        const radius = 5; // Radius for rounded left corners
+    
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+    
+        // Begin path for rectangle with rounded left corners
+        ctx.beginPath();
+        ctx.moveTo(radius, -height / 2); // Start just after the top-left corner
+    
+        // Top side and top-left corner
+        ctx.arcTo(0, -height / 2, 0, height / 2, radius); // Round top-left corner
+    
+        // Left side and bottom-left corner
+        ctx.lineTo(0, height / 2 - radius); // Straight line down on the left side
+        ctx.arcTo(0, height / 2, radius, height / 2, radius); // Round bottom-left corner
+    
+        // Bottom side (straight across)
+        ctx.lineTo(width, height / 2); // Straight line along the bottom
+    
+        // Right side (straight up)
+        ctx.lineTo(width, -height / 2); // Straight line up the right side
+    
+        // Connect back to start point
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+
+    update() {
+        // Rotate the cannon up and down within a specific range
+        if (this.angle > Math.PI / 4 || this.angle < -Math.PI / 4) {
+            this.direction *= -1;
+        }
+        this.angle += this.angleSpeed * this.direction;
+        this.draw();
+    }
+
+    shootBall(value, bounceLimit, speed) {
+        // Calculate the initial velocity based on the cannon's angle
+        const vx = Math.cos(this.angle) * speed;
+        const vy = Math.sin(this.angle) * speed;
+        balls.push(new Ball(this.color, value, bounceLimit, this.x+40*Math.cos(this.angle), this.y+40*Math.sin(this.angle), vx, vy));
+    }
+}
+
+// Initialize cannons
+const cannons = [
+    new Cannon('green', 0, ballCanvas.height / 4, 0.02),
+    new Cannon('blue', 0, ballCanvas.height / 2, 0.02),
+    new Cannon('red', 0, (3 * ballCanvas.height) / 4, 0.02)
+];
 
 // Update Display
 function updateDisplay() {
@@ -145,21 +213,34 @@ function renderBallButtons() {
     gameState.ballLists.forEach(ball => {
         const button = document.createElement('button');
         button.textContent = `${ball.name} (Cost: ${ball.cost})`;
-        button.onclick = () => buyBall(ball);
+        button.onclick = () => {
+            const cannon = cannons.find(c => c.color === ball.color);
+            if (cannon && gameState.yellowCurrency >= ball.cost && ball.currentBalls < ball.maxBalls) {
+                gameState.yellowCurrency -= ball.cost;
+                cannon.shootBall(ball.value, ball.bounceLimit, ball.speed);
+                ball.currentBalls += 1;
+                updateDisplay();
+                renderUpgrades();
+            }
+        };
         ballButtonsDiv.appendChild(button);
     });
 }
 
-// Animation Loop
+// Animation Loop to update cannons and balls
 function animateBalls() {
     ctx.clearRect(0, 0, ballCanvas.width, ballCanvas.height);
+    
+    // Update cannons
+    cannons.forEach(cannon => cannon.update());
+    
+    // Update balls
     balls = balls.filter(ball => {
         ball.update();
         if (ball.isExpired()) {
-            // Decrement the currentBalls count for the specific ball type
             const ballType = gameState.ballLists.find(b => b.color === ball.color);
             ballType.currentBalls -= 1;
-            return false;  // Remove the ball from the array
+            return false; // Remove expired ball
         }
         return true;
     });
@@ -212,6 +293,9 @@ function renderUpgrades() {
         upgradesDiv.appendChild(upgradeContainer);
     });
 }
+
+
+
 // Initialize
 renderBallButtons();
 renderUpgrades();
