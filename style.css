@@ -130,8 +130,8 @@ h1, #currency-display, #balls button, #upgrade-menu h3, #upgrade-menu .upgrade-b
     align-items: center;
 }
 .currency-ball {
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -196,3 +196,24 @@ h1, #currency-display, #balls button, #upgrade-menu h3, #upgrade-menu .upgrade-b
 .cannon.red { background-color: red; }
 .cannon.blue { background-color: blue; }
 .cannon.yellow { background-color: yellow; }
+
+#victory-overlay h1 {
+    color: #e0ff7e;
+    font-size: 48px;
+    margin: 0;
+}
+
+#victory-overlay button {
+    font-size: 24px;
+    background-color: #4c4c4e;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+#victory-overlay button:hover {
+    background-color: #6a6a6c;
+}

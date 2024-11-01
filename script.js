@@ -202,6 +202,7 @@ function upgradeBall(ball, type) {
         if (type === 'maxBalls') ball.maxBalls += 1;
         updateDisplay();
         renderUpgrades();
+        checkVictoryCondition();
     }
 }
 
@@ -308,6 +309,58 @@ function renderUpgrades() {
         upgradesDiv.appendChild(header);
         upgradesDiv.appendChild(upgradeContainer);
     });
+}
+
+// Check if all upgrades are maxed out
+function checkVictoryCondition() {
+    let allMaxed = gameState.ballLists.every(ball => {
+        return ['speed', 'value', 'bounceLimit', 'maxBalls'].every(type => {
+            const level = ball[`${type}Level`] || 0;
+            return level >= upgradePrices[type].length; // Check if max level reached for each upgrade type
+        });
+    });
+    
+    if (allMaxed) {
+        displayVictoryScreen();
+    }
+}
+// Display victory screen
+function displayVictoryScreen() {
+    const victoryOverlay = document.createElement('div');
+    victoryOverlay.id = 'victory-overlay';
+    victoryOverlay.style.position = 'fixed';
+    victoryOverlay.style.top = '0';
+    victoryOverlay.style.left = '0';
+    victoryOverlay.style.width = '100%';
+    victoryOverlay.style.height = '100%';
+    victoryOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    victoryOverlay.style.display = 'flex';
+    victoryOverlay.style.flexDirection = 'column';
+    victoryOverlay.style.alignItems = 'center';
+    victoryOverlay.style.justifyContent = 'center';
+    victoryOverlay.style.color = '#fff';
+    victoryOverlay.style.fontSize = '32px';
+    victoryOverlay.style.zIndex = '1000';
+
+    const victoryMessage = document.createElement('h1');
+    victoryMessage.textContent = 'Victory! All Upgrades Purchased!';
+    victoryOverlay.appendChild(victoryMessage);
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Close';
+    closeButton.style.padding = '10px 20px';
+    closeButton.style.fontSize = '20px';
+    closeButton.style.marginTop = '20px';
+    closeButton.style.backgroundColor = '#4c4c4e';
+    closeButton.style.color = '#fff';
+    closeButton.style.border = 'none';
+    closeButton.style.borderRadius = '8px';
+    closeButton.style.cursor = 'pointer';
+
+    closeButton.onclick = () => document.body.removeChild(victoryOverlay);
+    victoryOverlay.appendChild(closeButton);
+
+    document.body.appendChild(victoryOverlay);
 }
 
 
