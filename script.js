@@ -90,13 +90,15 @@ class Ball {
 
 // Cannon class to handle ball spawning
 class Cannon {
-    constructor(color, x, y, angleSpeed) {
+    constructor(color, x, y, angleSpeed, maxBalls, ballIndex) {
         this.color = color;
         this.x = x;
         this.y = y;
         this.angle = -Math.PI / 4; // Start pointing upwards
         this.angleSpeed = angleSpeed;
         this.direction = 1; // To control the rotation (1 for down, -1 for up)
+        this.maxBalls = maxBalls;
+        this.ballIndex = ballIndex; // Index to find currentBalls in gameState
     }
 
     draw() {
@@ -129,6 +131,20 @@ class Cannon {
         // Connect back to start point
         ctx.closePath();
         ctx.fill();
+    
+        // Draw the number of balls left / maxBalls above the cannon, rotated with it
+        ctx.fillStyle = 'white'; // Set text color to white
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        
+        // Retrieve the current and max balls for this cannon
+        const currentBalls = gameState.ballLists[this.ballIndex].currentBalls;
+        const maxBalls = gameState.ballLists[this.ballIndex].maxBalls;
+        
+        // Draw the text above the cannon, rotating with it
+        ctx.fillText(`${currentBalls} / ${maxBalls}`, width / 2, 8);
+    
         ctx.restore();
     }
 
@@ -151,9 +167,9 @@ class Cannon {
 
 // Initialize cannons
 const cannons = [
-    new Cannon('green', 0, ballCanvas.height / 4, 0.02),
-    new Cannon('blue', 0, ballCanvas.height / 2, 0.02),
-    new Cannon('red', 0, (3 * ballCanvas.height) / 4, 0.02)
+    new Cannon('green', 0, ballCanvas.height / 4, 0.02, gameState.ballLists[0].maxBalls, 0),
+    new Cannon('blue', 0, ballCanvas.height / 2, 0.02, gameState.ballLists[1].maxBalls, 1),
+    new Cannon('red', 0, (3 * ballCanvas.height) / 4, 0.02, gameState.ballLists[2].maxBalls, 2)
 ];
 
 // Update Display
